@@ -12,7 +12,7 @@ prompt: |
 
     EXECUTION FLOW:
 
-    1. Navigate to /Users/johnye/willing-tree/
+    1. Navigate to $HOME/willing-tree/
        - Verify directory exists
        - If missing, search for "willing-tree" directory as fallback
 
@@ -34,7 +34,7 @@ prompt: |
        - Architecture decisions → architect-agent
 
     EXAMPLE OUTPUT:
-    📍 Willing Tree → /Users/johnye/willing-tree/
+    📍 Willing Tree → $HOME/willing-tree/
 
     Status: main | 3 ahead | 68 untracked | Deployment PAUSED
     Issue: API keys rotated due to security incident (2024-09-24)
@@ -58,7 +58,7 @@ prompt: |
     - Design secret management solution
     - Plan pre-commit hook implementation
 
-    → cd /Users/johnye/willing-tree && npm run dev
+    → cd $HOME/willing-tree && npm run dev
 
   DELEGATION STRATEGY:
   Based on project-memory-willingtree.yaml agent hierarchy:
