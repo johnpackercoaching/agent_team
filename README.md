@@ -20,6 +20,16 @@ cd agent_team
 
 That's it! The agents are now available in your Claude Code.
 
+### Verify Installation
+
+After installation, verify everything is working:
+
+```bash
+./verify.sh
+```
+
+This will check that agents are installed in the correct location and accessible to Claude Code.
+
 ### Manual Installation
 
 If you prefer manual installation or the script doesn't work:
@@ -115,15 +125,62 @@ Each agent is defined in a markdown file with:
 
 ## Troubleshooting
 
+### Installation Path Issues
+
+The installer checks multiple possible locations for Claude Code configuration:
+- `~/.claude/agents/` (standard location)
+- `~/.config/claude/agents/` (Linux XDG)
+- `~/Library/Application Support/claude/agents/` (macOS alternative)
+
+**To verify the correct path:**
+```bash
+./verify.sh
+```
+
+This will show you:
+- Where Claude is looking for agents
+- How many agents are installed
+- Which agents might be missing
+- Directory permissions
+
 ### Agents not appearing in Claude Code
 - Restart Claude Code after installation
-- Check that files are in `~/.claude/agents/`
+- Run `./verify.sh` to check installation status
+- Check that files are in the correct location (shown by verify.sh)
 - Verify file permissions: `ls -la ~/.claude/agents/`
+
+### Installation script shows wrong directory
+
+The installer will show you where it plans to install and ask for confirmation:
+```
+The agents will be installed to:
+  /path/to/your/.claude/agents
+
+Is this correct? (y/n)
+```
+
+If the path is wrong:
+1. Type 'n' to cancel
+2. Manually copy agents: `cp -r agents/*.md ~/.claude/agents/`
+3. Or edit the install.sh script to use your custom path
+
+### Claude Code can't find the agents
+
+Ask Claude Code to check the installation:
+```
+"Check my agent installation at ~/.claude/agents"
+```
+
+Claude will verify:
+- If the directory exists
+- How many agents are found
+- If permissions are correct
 
 ### Installation script fails
 - Use manual installation steps above
-- Check that `~/.claude/agents/` directory exists
+- Check that the agents directory exists or can be created
 - Ensure you have write permissions
+- On Windows, use WSL (Windows Subsystem for Linux)
 
 ## Requirements
 

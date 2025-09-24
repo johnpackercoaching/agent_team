@@ -9,17 +9,85 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Configuration
-CLAUDE_AGENTS_DIR="$HOME/.claude/agents"
-BACKUP_DIR="$HOME/.claude/agents.backup"
+# Detect OS
+OS="$(uname -s)"
+case "${OS}" in
+    Linux*)     OS_TYPE=Linux;;
+    Darwin*)    OS_TYPE=Mac;;
+    CYGWIN*)    OS_TYPE=Windows;;
+    MINGW*)     OS_TYPE=Windows;;
+    *)          OS_TYPE="UNKNOWN:${OS}"
+esac
+
+# Configuration - Check multiple possible locations
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 AGENTS_SOURCE_DIR="$SCRIPT_DIR/agents"
+
+# Function to find Claude config directory
+find_claude_config_dir() {
+    local possible_dirs=(
+        "$HOME/.claude"
+        "$HOME/.config/claude"
+        "$HOME/Library/Application Support/claude"
+        "${XDG_CONFIG_HOME:-$HOME/.config}/claude"
+    )
+
+    for dir in "${possible_dirs[@]}"; do
+        if [ -d "$dir" ]; then
+            echo "$dir"
+            return 0
+        fi
+    done
+
+    # Default to standard location
+    echo "$HOME/.claude"
+    return 0
+}
+
+# Find the Claude configuration directory
+CLAUDE_CONFIG_DIR="$(find_claude_config_dir)"
+CLAUDE_AGENTS_DIR="$CLAUDE_CONFIG_DIR/agents"
+BACKUP_DIR="$CLAUDE_CONFIG_DIR/agents.backup"
 
 echo "======================================"
 echo "Claude Code Agent Team Installer"
 echo "======================================"
+echo ""
+echo -e "${CYAN}System Information:${NC}"
+echo "  OS: $OS_TYPE"
+echo "  User: $USER"
+echo "  Home: $HOME"
+echo "  Claude Config: $CLAUDE_CONFIG_DIR"
+echo "  Target Directory: $CLAUDE_AGENTS_DIR"
+echo ""
+
+# Verify we're in the right place
+echo -e "${CYAN}Installation Source:${NC}"
+echo "  Script Location: $SCRIPT_DIR"
+echo "  Agents Source: $AGENTS_SOURCE_DIR"
+echo ""
+
+# Ask for confirmation
+echo -e "${YELLOW}The agents will be installed to:${NC}"
+echo -e "  ${BLUE}$CLAUDE_AGENTS_DIR${NC}"
+echo ""
+read -p "Is this correct? (y/n) [y]: " -n 1 -r
+echo ""
+if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ ! -z $REPLY ]]; then
+    echo ""
+    echo -e "${YELLOW}Installation cancelled.${NC}"
+    echo ""
+    echo "If the path is incorrect, you can manually specify it by editing this script"
+    echo "or by copying the agents folder to your Claude agents directory:"
+    echo ""
+    echo "  cp -r $AGENTS_SOURCE_DIR/* ~/.claude/agents/"
+    echo ""
+    exit 0
+fi
 echo ""
 
 # Check if agents source directory exists
@@ -78,21 +146,57 @@ echo -e "${GREEN}======================================"
 echo -e "Installation Complete!"
 echo -e "======================================${NC}"
 echo ""
-echo "Installed $AGENT_COUNT agents to: $CLAUDE_AGENTS_DIR"
-echo ""
-echo "Next steps:"
-echo "1. Restart Claude Code to load the new agents"
-echo "2. Type 'claude' in your terminal to start using the agents"
-echo ""
-echo "To see available agents, ask Claude Code:"
-echo "  'What agents are available?'"
+echo "Installed $AGENT_COUNT agents to:"
+echo -e "  ${BLUE}$CLAUDE_AGENTS_DIR${NC}"
 echo ""
 
-# Check if backup was created
-if [ -L "$BACKUP_DIR" ]; then
-    echo "Previous agents backed up to: $BACKUP_DIR"
-    echo "To restore: ./restore.sh"
+# Verify installation
+echo -e "${CYAN}Verifying installation:${NC}"
+INSTALLED_COUNT=$(ls -1 "$CLAUDE_AGENTS_DIR"/*.md 2>/dev/null | wc -l | tr -d ' ')
+if [ "$INSTALLED_COUNT" -ge "$AGENT_COUNT" ]; then
+    echo -e "  ${GREEN}✓${NC} All $AGENT_COUNT agents are properly installed"
+else
+    echo -e "  ${YELLOW}⚠${NC} Found $INSTALLED_COUNT agents (expected $AGENT_COUNT)"
+fi
+
+# Check permissions
+if [ -r "$CLAUDE_AGENTS_DIR" ] && [ -w "$CLAUDE_AGENTS_DIR" ]; then
+    echo -e "  ${GREEN}✓${NC} Directory permissions are correct"
+else
+    echo -e "  ${YELLOW}⚠${NC} Check directory permissions"
+fi
+
+# List first few agents as confirmation
+echo ""
+echo -e "${CYAN}Sample of installed agents:${NC}"
+ls -1 "$CLAUDE_AGENTS_DIR"/*.md 2>/dev/null | head -5 | while read agent; do
+    echo "  • $(basename "$agent" .md)"
+done
+if [ "$INSTALLED_COUNT" -gt 5 ]; then
+    echo "  ... and $((INSTALLED_COUNT - 5)) more"
 fi
 
 echo ""
+echo -e "${CYAN}Next steps:${NC}"
+echo "1. Restart Claude Code to load the new agents"
+echo "2. Type 'claude' in your terminal to start using the agents"
+echo ""
+echo "To verify agents are loaded, ask Claude Code:"
+echo -e "  ${YELLOW}'What agents are available?'${NC}"
+echo ""
+
+# Check if backup was created
+if [ -L "$BACKUP_DIR" ] || [ -d "$BACKUP_DIR" ]; then
+    echo -e "${CYAN}Backup information:${NC}"
+    echo "  Previous agents backed up to:"
+    echo "  $BACKUP_DIR"
+    echo "  To restore: ./restore.sh"
+    echo ""
+fi
+
+# Provide diagnostic command for Claude Code
+echo -e "${CYAN}For Claude Code to verify installation:${NC}"
+echo "  Ask: 'Check my agent installation at $CLAUDE_AGENTS_DIR'"
+echo ""
+
 echo -e "${GREEN}Happy coding with your new agent team!${NC}"
