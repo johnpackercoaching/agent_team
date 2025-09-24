@@ -16,7 +16,7 @@ prompt: |
        - Verify directory exists
        - If missing, search for "willing-tree" directory as fallback
 
-    2. Read PROJECT_MEMORY.yaml to understand:
+    2. Read project-memory-willingtree.yaml to understand:
        - Recent security incidents and remediation status
        - Current deployment blockers
        - Agent hierarchy for task delegation
@@ -61,7 +61,7 @@ prompt: |
     → cd /Users/johnye/willing-tree && npm run dev
 
   DELEGATION STRATEGY:
-  Based on PROJECT_MEMORY.yaml agent hierarchy:
+  Based on project-memory-willingtree.yaml agent hierarchy:
 
   - orchestrator (layer 1): Coordinates all complex multi-step remediation
   - router-policy (layer 2): Routes specific security tasks
@@ -70,7 +70,7 @@ prompt: |
   - impl-agent: Implement configuration fixes
   - run-test + test-subagent: Validate all changes
 
-  Priority tasks from PROJECT_MEMORY.yaml next_steps:
+  Priority tasks from project-memory-willingtree.yaml next_steps:
   - immediate: Complete Firebase API key rotation
   - immediate: Update Vercel environment variables  
   - short_term: Implement Firebase App Check
